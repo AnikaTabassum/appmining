@@ -117,6 +117,7 @@ stop_words.add("b")
 stop_words.add("\"")
 stop_words.add("\'s")
 stop_words.add("''")
+stop_words.add("b\'")
 
 from nltk.stem import PorterStemmer 
 from nltk.tokenize import word_tokenize 
@@ -140,7 +141,7 @@ for lists in allWithoutTags:
 	allFilteredSentence.append(filtered_sentence)
 			
 ############ lines without stop words ----- REMOVING STOP WORDS
-print("senserd ", allFilteredSentence)################ lines without stop words --------REMOVING STOP WORDS
+# print("senserd ", allFilteredSentence)################ lines without stop words --------REMOVING STOP WORDS
 
 
 # Import the wordcloud library
@@ -226,6 +227,8 @@ from nltk.corpus import stopwords
 from nltk.tokenize import RegexpTokenizer
 from datetime import datetime
 
+from gensim.models.wrappers import LdaMallet
+
 def get_most_freq_words(str, n=None):
 	vect = CountVectorizer().fit(str)
 	bag_of_words = vect.transform(str)
@@ -246,15 +249,15 @@ tweets_corpus = [tweets_dictionary.doc2bow(tweet) for tweet in papers.filtered]
 # print("tweets_corpus ",tweets_corpus)
 # compute coherence
 tweets_coherence = []
-for nb_topics in range(1,6):
-	lda = LdaModel(tweets_corpus, num_topics = nb_topics, id2word = tweets_dictionary, passes=10)
+for nb_topics in range(1,4):
+	lda = LdaModel(tweets_corpus, num_topics = nb_topics, id2word = tweets_dictionary, passes=10, alpha=4)
 	cohm = CoherenceModel(model=lda, corpus=tweets_corpus, dictionary=tweets_dictionary, coherence='u_mass')
 	coh = cohm.get_coherence()
 	tweets_coherence.append(coh)
 
 # visualize coherence
 plt.figure(figsize=(10,5))
-plt.plot(range(1,6),tweets_coherence)
+plt.plot(range(1,4),tweets_coherence)
 plt.xlabel("Number of Topics")
 plt.ylabel("Coherence Score");
 plt.show()
@@ -262,7 +265,7 @@ plt.show()
 import matplotlib.gridspec as gridspec
 import math
 k = 6
-tweets_lda = LdaModel(tweets_corpus, num_topics = k, id2word = tweets_dictionary, passes=10)
+tweets_lda = LdaModel(tweets_corpus, num_topics = k, id2word = tweets_dictionary, passes=10,alpha=4)
 print("tweets_coherence ", tweets_coherence)
 
 
@@ -345,39 +348,65 @@ for data in papers.filtered:
 # f.close()
 
 
-import csv
-with open('output_file_test.csv', 'w', newline='') as file:
-	writer = csv.writer(file)
-	writer.writerow(["document_name", "topic_0", "topic_1", "topic_2", "topic_3", "topic_4", "topic_5"])
-	for tweet in papers.filtered:
-		for d in tweet:
-			if d.isdecimal():
-				pass
-			else:
-				bow = tweets_dictionary.doc2bow(d.split())
-				t = tweets_lda.get_document_topics(bow)
-				# print("jane")
-				# tempList=[]
-				# for val in tempList:
-				# 	tempList.append(val)
-				writer.writerow([d, t[0][1],t[1][1],t[2][1],t[3][1],t[4][1],t[5][1]])
+# import csv
+# with open('output_file_test.csv', 'w', newline='') as file:
+# 	writer = csv.writer(file)
+# 	writer.writerow(["document_name", "topic_0", "topic_1", "topic_2", "topic_3", "topic_4", "topic_5"])
+# 	for tweet in papers.filtered:
+# 		for d in tweet:
+# 			if d.isdecimal():
+# 				pass
+# 			else:
+# 				bow = tweets_dictionary.doc2bow(d.split())
+# 				t = tweets_lda.get_document_topics(bow)
+# 				# print("jane")
+# 				# tempList=[]
+# 				# for val in tempList:
+# 				# 	tempList.append(val)
+# 				writer.writerow([d, t[0][1],t[1][1],t[2][1],t[3][1],t[4][1],t[5][1]])
 	# writer.writerow([1, "Linus Torvalds", "Linux Kernel"])
 	# writer.writerow([2, "Tim Berners-Lee", "World Wide Web"])
 	# writer.writerow([3, "Guido van Rossum", "Python Programming"])
 
-# import csv
-# with open('output_file_str.csv', 'w', newline='') as file:
-# 	writer = csv.writer(file)
-# 	writer.writerow(["document_name", "topic_0", "topic_1", "topic_2", "topic_3", "topic_4", "topic_5"])
-# 	for tweet in papers.filtered:
-# 		stri=""
-# 		for d in tweet:
-# 			stri=stri+" "+d
+import csv
+with open('output_file_str_ll.csv', 'w', newline='') as file:
+	writer = csv.writer(file)
+	writer.writerow(["document_name", "topic_0", "topic_1", "topic_2", "topic_3", "topic_4", "topic_5"])
+	for tweet in papers.filtered:
+		stri=""
+		for d in tweet:
+			stri=stri+" "+d
 
-# 		bow = tweets_dictionary.doc2bow(stri.split())
-# 		t = tweets_lda.get_document_topics(bow)
-# 		# print("jane",t)
-# 		# tempList=[]
-# 		# for val in tempList:
-# 		# 	tempList.append(val)
-# 		writer.writerow([stri, t])
+		bow = tweets_dictionary.doc2bow(stri.split())
+		t = tweets_lda.get_document_topics(bow)
+		print("before",t)
+		t=sorted(t, key = lambda x: float(x[1]), reverse = True)
+		print("after",t)
+		# print("len ", len(t))
+		i=4
+		prev_len=len(t)
+		for i in range(4,len(t)):
+			# t.remove((t[i][0],t[i][1]))
+			
+			ind=t[4][0]
+			# print("i ",i, ind)
+			t.pop(4)
+			# t.pop(t.index((t[i][0],t[i][1])))
+			t.append(tuple([ind, 0]))
+			# print("after change ",t)
+			
+		# for i in range(len(t),prev_len):
+		# 	# t.extend((tuple([i,0])))
+		# 	t.append(tuple([i, 0]))
+		# 	# i+=1
+			# t[i][1]=023
+			# print("vals ",t[i][0],type(t[i][0]),t[i][1], t.index((t[i][0],t[i][1])))
+		# print("jane",t)
+		# tempList=[]
+		# for val in tempList:
+		# 	tempList.append(val)
+		
+		t=sorted(t, key = lambda x: float(x[0]), reverse = False)
+		# print("after last",t)
+		writer.writerow([stri, t[0][1], t[1][1], t[2][1], t[3][1], t[4][1], t[5][1]])
+
