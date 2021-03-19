@@ -1,6 +1,11 @@
 body, html {
     margin: 0;
     font-family: sans-serif;
+    /*background-image: "D:\\8th_semester\\my_8th_semester\\SPL3\\appmining\\appmining\\static\\images\\bg_1.jpg";*/
+    /*background-color: #00022e;*/
+     background-image: url('/static/images/bg_dark.png');
+     background-repeat: no-repeat;
+     background-size: auto;
 }
 
 .content {
@@ -33,3 +38,148 @@ td {
 #content {
     width: 70%;
 }
+
+
+/* Dropdown Button */
+.dropbtn {
+  background-color: #3498DB;
+  color: white;
+  padding: 16px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+/* Dropdown button on hover & focus */
+.dropbtn:hover, .dropbtn:focus {
+  background-color: #2980B9;
+}
+
+/* The container <div> - needed to position the dropdown content */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {background-color: #ddd}
+
+/* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
+.show {display:block;}
+
+form.example input[type=text] {
+  padding: 10px;
+  font-size: 17px;
+  border: 1px solid grey;
+  float: left;
+  width: 80%;
+  background: #f1f1f1;
+}
+
+form.example button {
+  float: left;
+  width: 20%;
+  padding: 10px;
+  background: #2196F3;
+  color: white;
+  font-size: 17px;
+  border: 1px solid grey;
+  border-left: none;
+  cursor: pointer;
+}
+
+form.example button:hover {
+  background: #0b7dda;
+}
+
+form.example::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+.btn {
+  background-color: DodgerBlue;
+  border: none;
+  color: white;
+  padding: 12px 30px;
+  cursor: pointer;
+  font-size: 20px;
+  margin-left: 650px;
+  margin-top: 50px;
+  margin-bottom: 50px;
+}
+
+/* Darker background on mouse-over */
+.btn:hover {
+  background-color: RoyalBlue;
+}
+
+.btn2 {
+  background-color: #b90e0a;
+  border: none;
+  color: white;
+  padding: 12px 30px;
+  cursor: pointer;
+  font-size: 20px;
+  margin-left: 650px;
+  margin-top: 50px;
+  margin-bottom: 50px;
+}
+
+/* Darker background on mouse-over */
+.btn2:hover {
+  background-color: #610c04;
+}
+
+.searchbar {
+    margin-top: 2em;
+    border: none;
+    width: 40%;
+    padding-left: 14%;
+    color: white;
+    border-bottom: 1px white solid;
+    background: transparent;
+    text-transform: uppercase;
+    align-content: center;
+  }
+
+  ::placeholder {
+    color: white;
+    opacity: .7;
+    padding-left: 1%;
+  }
+  
+  *:focus {
+    outline: none;
+  }
+
+  .go {
+    margin-top: 2em;
+    color: white;
+    border: none;
+    cursor: pointer;
+    background: transparent;
+  }
+
+  .go:hover {
+    color: rgba(255, 255, 255, .4);
+  }
