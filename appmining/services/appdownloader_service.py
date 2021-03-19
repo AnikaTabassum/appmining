@@ -13,6 +13,7 @@ class appdownloader(object):
 		print("i am useless")
 
 	def search(self,query):
+		print("here comes search")
 		res = requests.get('https://apkpure.com/search?q={}&region='.format(quote_plus(query)), headers={
 			'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/601.7.5 (KHTML, like Gecko) '
 						  'Version/9.1.2 Safari/601.7.5 '
@@ -20,8 +21,12 @@ class appdownloader(object):
 		soup = BeautifulSoup(res, "html.parser")
 		search_result = soup.find('div', {'id': 'search-res'}).find('dl', {'class': 'search-dl'})
 		app_tag = search_result.find('p', {'class': 'search-title'}).find('a')
+		print("download details ", search_result)
+		img_tag = search_result.find('dt').find('img')
+		print("img tag ", img_tag['src'])
+		print("app details ", app_tag['href'], "tayra ", app_tag['title'])
 		download_link = 'https://apkpure.com' + app_tag['href']
-		return download_link
+		return download_link,  app_tag['title'], img_tag['src']
 
 	def download(self,link):
 		res = requests.get(link + '/download?from=details', headers={
@@ -39,15 +44,23 @@ class appdownloader(object):
 					if chunk:
 						file.write(chunk)
 
-	def download_apk(self,app_id):
-		download_link = search(app_id)
-
+	def download_apk(self,download_link):
+		# download_link = appdownloader().search(app_id)
+		print("download_link ", download_link)
+		result=""
 		if download_link is not None:
+
 			print('Downloading {}.apk ...'.format(download_link))
-			download(download_link)
-			print('Download completed!')
+			appdownloader().download(download_link)
+			result='Download completed!'
+			print(result)
 		else:
-			print('No results')
+			result='No results'
+			print(result)
+		print("download_apk ", result)
+		return result
+
+
 
 	# Test it
-	download_apk('branl')
+# appdownloader().download_apk('branl')
