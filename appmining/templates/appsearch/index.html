@@ -1,40 +1,116 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block head %}
-<title>Task Master</title>
+<title>Test</title>
 {% endblock %}
+{%  block body %}
+<div id="app" >
+    <div style="border-color: navy; height: 100%; width: 100%;">
+    <h1 style="text-align: center; color: white;"> APP Anomalies </h1>
+    <img src="https://image.winudf.com/v2/image1/Y29tLnNva28uc2FkLnNhcnJvdy5hbG9uZS53YWxscGFwZXIuSERfaWNvbl8xNTgyNzY1Njc3XzAzOA/icon.png?w=170&amp;fakeurl=1">
+    <!-- <p>{{message}}</p> -->
+    <!-- <input v-model="message"> -->
+    <!-- <textarea v-model="model" style="  text-align: center; margin-left: 600px; height: 50px; width: 300px;" placeholder="app name" ></textarea>
+    <button v-on:click.prevent='search' style="margin-left: 700px; margin-top: 20px; margin-bottom: 20px;">Search App</button> -->
+<!-- 
+  <form class="example" style="margin:auto;max-width:300px">
+  <input type="text" placeholder="App name"  v-model="model" name="search2">
+  <button v-on:click.prevent='search' type="submit"><i class="fa fa-search"></i></button>
+  </form> -->
+    
+    
+          <form class="search" id="search" style="margin-left: 550px;">
+            <img v-bind:src="img_name" /> 
+            <input class='searchbar transparent' id='searchbar' v-model="model"  type='text' autocomplete="off" required placeholder='enter app name' />
+            <input v-on:click.prevent='search' class='button go' id='go' type="submit" value='GO' />
+          </form>
+    
 
-{% block body %}
-<div class="content">
-    <h1 style="text-align: center">App Anomalies</h1>
-    {% if tasks|length < 1 %}
-    <h4 style="text-align: center">There are no tasks. Create one below!</h4>
-    {% else %}
-    <table>
-        <tr>
-            <th>Task</th>
-            <th>Added</th>
-            <th>Actions</th>
-        </tr>
-        {% for task in tasks %}
-            <tr>
-                <td>{{ task.content }}</td>
-                <td>{{ task.date_created.date() }}</td>
-                <td>
-                    <a href="/delete/{{task.id}}">Delete</a>
-                    <br>
-                    <a href="/update/{{task.id}}">Update</a>
-                </td>
-            </tr>
-        {% endfor %}
-    </table>
-    {% endif %}
 
-    <div class="form">
-        <form action="/" method="POST">
-            <input type="text" name="content" id="content">
-            <input type="submit" value="Search App">
-        </form>
+    <input v-model="result" style="height: 50px; width: 500px;margin-left: 500px;margin-top: 50px; text-align: center; border-style: none; font-size: 26px; background: transparent; color: white; font-family: serif;"  readonly="readonly">{{ result }}
     </div>
+
+    <!-- <textarea v-model="model2" style="height: 80px; width: 500px;" placeholder="example: - intent data"></textarea> -->
+    <div>
+      <button v-on:click.prevent='download' class="btn"><i class="fa fa-download"></i> Download App</button>
+    <!-- <button v-on:click.prevent='download' style="margin-left: 700px; margin-top: 20px; margin-bottom: 20px; ">Download App</button>   -->
+    <input v-model="result2" style="height: 50px; width: 500px;margin-left: 500px; text-align: center; border-color: #00022e; background-color: #00022e; color: white;"  readonly="readonly">{{ result2 }}
+    </div>
+    <!-- <i class="fas fa-skull-crossbones"></i> -->
+     <div>
+    <button v-on:click.prevent='detect' class="btn2"><i class="fa fa-cog"></i> Check for Anomaly</button>
+    <input v-model="result3" style="height: 50px; width: 500px;margin-left: 500px; text-align: center; border-color: #00022e; background-color: #00022e; color: white;"  readonly="readonly">{{ result3 }}
+    </div>
+    
 </div>
+<script type="text/javascript">
+    var app = new Vue({
+        el: '#app',
+        data: {
+        message: 'Hello Vue.js!',
+        model: null,
+        result: null,
+        model2: null,
+        result2: null,
+        result3:null,
+        img_name: null,
+        call:null,
+        },
+        methods: {
+        search: function() {
+            console.log(app.model);
+            alert(app.model);
+            const request = new Request(
+                `/api/search`,
+                {
+                 method: "POST",
+                headers: { "Content-Type": "application/json; charset=utf-8" },
+                body: JSON.stringify(this.model),
+                }
+              );
+            // this.result="YouTube APK"
+          fetch(request)
+          .then(response => response.json())
+          .then(data =>this.call=data);
+           setTimeout(() => {  
+          console.log("asdfghj ", this.call, this.result= this.call['app_name'], this.img_name= this.call['img_src']);
+             }, 3000);
+
+        },
+        download: function(){
+          const request = new Request(
+                `/api/download`,
+                {
+                 method: "POST",
+                headers: { "Content-Type": "application/json; charset=utf-8" },
+                body: JSON.stringify(this.model2),
+                }
+              );
+            this.result2="Downloading app..."
+          fetch(request)
+          .then(response => response.json())
+          .then(data =>this.result2=data['downloaded']);  
+
+          // setTimeout(() => {  this.result2="Download complete!!" }, 30000);
+        },
+        detect: function(){
+          const request = new Request(
+                `/api/detect`,
+                {
+                 method: "POST",
+                headers: { "Content-Type": "application/json; charset=utf-8" },
+                body: JSON.stringify(this.model2),
+                }
+              );
+            // this.result3="Checking anomalous behavoirs..."
+          // fetch(request)
+          // .then(response => response.json())
+          // .then(data =>this.result2=data);  
+
+          // setTimeout(() => {  this.result3="The app is safe!!" }, 50000);
+        }
+        }
+    })
+</script>
+
 {% endblock %}
