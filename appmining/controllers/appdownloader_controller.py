@@ -36,13 +36,15 @@ def searchapp():
 	result=appdownloader().search(app_name)
 	download_link=result[0]
 	application=result[1]
+	img_src=result[2]
+	print("img_src", img_src)
 	n= download_link.count("/")
 	print("n",n)
 	appid=download_link.rsplit('/', 1)[-1]
 	appName=download_link.rsplit('/', 1)[-1]
 	print("jddon", result)
 	downloadDesc(appid)
-	return jsonify({'app_name':result[1]})
+	return jsonify({'app_name':result[1], 'img_src': result[2]})
 
 @app.route('/api/download', methods=['POST', 'PUT'])
 def downaloadapp():
