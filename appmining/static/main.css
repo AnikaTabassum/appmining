@@ -123,9 +123,9 @@ form.example::after {
   padding: 12px 30px;
   cursor: pointer;
   font-size: 20px;
-  margin-left: 650px;
-  margin-top: 50px;
-  margin-bottom: 50px;
+  margin-left: 44%;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 /* Darker background on mouse-over */
@@ -140,9 +140,9 @@ form.example::after {
   padding: 12px 30px;
   cursor: pointer;
   font-size: 20px;
-  margin-left: 650px;
-  margin-top: 50px;
-  margin-bottom: 50px;
+  margin-left:42%;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 /* Darker background on mouse-over */
@@ -153,13 +153,15 @@ form.example::after {
 .searchbar {
     margin-top: 2em;
     border: none;
-    width: 40%;
-    padding-left: 14%;
+    width: 55%;
+    /*padding-left: 10%;*/
     color: white;
+    font-size: 20px;
     border-bottom: 1px white solid;
     background: transparent;
     text-transform: uppercase;
-    align-content: center;
+    text-align: center;
+    text-overflow: all;
   }
 
   ::placeholder {
@@ -183,3 +185,19 @@ form.example::after {
   .go:hover {
     color: rgba(255, 255, 255, .4);
   }
+
+#btndown:hover{
+  color:green;
+}
+
+#btncheck:hover{
+  color:maroon;
+}
+
+.glyphicon { margin-right:5px;}
+.rating .glyphicon {font-size: 22px;}
+.rating-num { margin-top:0px;font-size: 54px; }
+.progress { margin-bottom: 5px;}
+.progress-bar { text-align: left; }
+.rating-desc .col-md-3 {padding-right: 0px;}
+.sr-only { margin-left: 5px;overflow: visible;clip: auto; }
