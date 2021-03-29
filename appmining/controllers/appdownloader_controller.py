@@ -9,8 +9,9 @@ from appmining import app
 from appmining.services import *
 from google_play_scraper import app as apk
 # import parser
-global application, download_link, appName, topicNo
+global application, download_link, appName, topicNo, score, histogram, ratings, reviews
 import os
+from pynput.keyboard import Key, Controller
 @app.route('/')
 @app.route('/apps')
 def appsearch():
@@ -20,31 +21,39 @@ def appsearch():
 def downloadDesc(appid):
 	result = apk(
 		# 'com.nianticlabs.pokemongo',
-		'com.tinybuildgames.helloneighbor',
+		appid,
 		lang='en', # defaults to 'en'
 		country='us' # defaults to 'us'
 	)
+	global score, histogram, ratings, reviews
 	desc=[result["description"]][0]
 	print(desc)
-	
+	print("score",result['score'])
+	print("histogram", result['histogram'])
+	print("ratings", result['ratings'])
+	print("reviews ", result['reviews'])
+	score= result['score']
+	histogram= result['histogram']
+	ratings= result['ratings']
+	reviews = result['reviews']
 	parseVal(desc)
 
 @app.route('/api/search', methods=['POST', 'PUT'])
 def searchapp():
-	global application, download_link, appName
+	global application, download_link, appName, score, histogram, ratings, reviews
 	app_name = request.json
-	result=appdownloader().search(app_name)
+	result=appdownloader().search(app_name) 
 	download_link=result[0]
 	application=result[1]
 	img_src=result[2]
 	print("img_src", img_src)
 	n= download_link.count("/")
-	print("n",n)
+	print("n",n, app_name)
 	appid=download_link.rsplit('/', 1)[-1]
 	appName=download_link.rsplit('/', 1)[-1]
-	print("jddon", result)
+	print("jddon", result, appid)
 	downloadDesc(appid)
-	return jsonify({'app_name':result[1], 'img_src': result[2]})
+	return jsonify({'app_name':result[1], 'img_src': result[2], 'score':score, 'ratings':ratings, 'histogram':histogram})
 
 @app.route('/api/download', methods=['POST', 'PUT'])
 def downaloadapp():
@@ -52,16 +61,16 @@ def downaloadapp():
 	# app_name = request.json
 	result=appdownloader().download_apk(download_link)
 	print("downaloadapp", result)
-	calculateScore()
+	# calculateScore()
 	return jsonify({"downloaded":result})
 
-@app.route('/api/detect', methods=['POST', 'PUT'])
-def detecgapp():
-	global application, download_link
-	# app_name = request.json
-	result=appdownloader().download_apk(download_link)
-	print("downaloadapp", result)
-	return jsonify(result)
+# @app.route('/api/detect', methods=['POST', 'PUT'])
+# def detecgapp():
+# 	global application, download_link
+# 	# app_name = request.json
+# 	result=appdownloader().download_apk(download_link)
+# 	print("downaloadapp", result)
+# 	return jsonify(result)
 
 
 import pandas as pd
@@ -107,7 +116,7 @@ def parseVal(vl):
 	if detect(vl)=="en":
 		# dtect_lan.append(detect(vl))
 		testParser = Parse()
-		print("val",vl) 
+		print("val-------------",vl) 
 		testParser.feed(vl)
 		parsed=testParser.get_value()
 		print("parsed",parsed)
@@ -166,7 +175,7 @@ def stopWordAndStemming(line):
 
 def topicFind(filtered_sentence):
 	global topicNo
-	with open("lda_model.pk","rb") as fpck:
+	with open("lda_model_3.pk","rb") as fpck:
 		lda = pickle.load(fpck)
 
 	with open("dicts.pkl","rb") as d:
@@ -192,18 +201,24 @@ def topicFind(filtered_sentence):
 	topics=[]
 	for i in range(0,12):
 		topics.append(t[i][1])
-	print(topics)
-	with open("kmeans.pk","rb") as k:
+	print("topics",topics)
+	with open("kmeans_26_03_2021.pk","rb") as k:
 		km = pickle.load(k)
 				
 	print(km.predict([topics]))
 	pred=km.predict([topics])
 	topicNo=pred[0]
 	print("topicNo", topicNo)
-
+@app.route('/api/detect', methods=['POST', 'PUT'])
 def calculateScore():
-	global appName
-	os.system("apktool" + " d " + appName+".apk")
+	global appName, topicNo
+	os.system("apktool" + " d " + appName+".apk"+" & ‘\r\n’")
+
+	# keyboard = Controller()
+	# # keyboard.press(Key.cmd)
+	# # keyboard.release(Key.cmd)
+	# os.system(keyboard.press('a'))
+	# os.system(keyboard.release('a'))
 	root = appName
 	# import os 
 	dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -213,3 +228,18 @@ def calculateScore():
 	print("cwd", cwd)
 	parser().parseFile(root)
 	print(countapi().countIDFscore(cwd+"\\outputFile.txt",topicNo))
+	modelName="oc_svm_"+str(topicNo)+".pk"
+	sc=countapi().countIDFscore(cwd+"\\outputFile.txt",topicNo)
+	score=[sc]
+	with open(modelName,"rb") as k:
+		md = pickle.load(k)
+				
+	pred=md.predict([score])
+	print("pred ", pred)
+	malwareFlag="This App is suspected as Malware! "
+	if pred[0]==1:
+		malwareFlag="This App is safe to install "
+	print("malwareFlag", malwareFlag)
+	return jsonify({"anomaly":malwareFlag})
+	# topicNo=pred[0]
+	# print("topicNo", topicNo)
