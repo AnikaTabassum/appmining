@@ -5,9 +5,9 @@
 {% endblock %}
 {%  block body %}
 <div id="app" >
-    <div style="border-color: navy; height: 100%; width: 100%;">
-    <h1 style="text-align: center; color: white;"> APP Anomalies </h1>
-    <img src="https://image.winudf.com/v2/image1/Y29tLnNva28uc2FkLnNhcnJvdy5hbG9uZS53YWxscGFwZXIuSERfaWNvbl8xNTgyNzY1Njc3XzAzOA/icon.png?w=170&amp;fakeurl=1">
+    <div style="height: 100%; width: 100%;">
+    <h1 style="padding-left: 42%; color: white; "> APP Anomalies </h1>
+    <!-- <img src="https://image.winudf.com/v2/image1/Y29tLnNva28uc2FkLnNhcnJvdy5hbG9uZS53YWxscGFwZXIuSERfaWNvbl8xNTgyNzY1Njc3XzAzOA/icon.png?w=170&amp;fakeurl=1"> -->
     <!-- <p>{{message}}</p> -->
     <!-- <input v-model="message"> -->
     <!-- <textarea v-model="model" style="  text-align: center; margin-left: 600px; height: 50px; width: 300px;" placeholder="app name" ></textarea>
@@ -17,29 +17,44 @@
   <input type="text" placeholder="App name"  v-model="model" name="search2">
   <button v-on:click.prevent='search' type="submit"><i class="fa fa-search"></i></button>
   </form> -->
+
     
     
-          <form class="search" id="search" style="margin-left: 550px;">
-            <img v-bind:src="img_name" /> 
-            <input class='searchbar transparent' id='searchbar' v-model="model"  type='text' autocomplete="off" required placeholder='enter app name' />
+          <form class="search" id="search" style="margin-left: 450px;">
+            <span>
+            
+            <input class='searchbar transparent' id='searchbar' v-model="model"  type='text' autocomplete="off" required placeholder='search  for  your  apps  here' />
             <input v-on:click.prevent='search' class='button go' id='go' type="submit" value='GO' />
+            </span>
           </form>
     
 
-
-    <input v-model="result" style="height: 50px; width: 500px;margin-left: 500px;margin-top: 50px; text-align: center; border-style: none; font-size: 26px; background: transparent; color: white; font-family: serif;"  readonly="readonly">{{ result }}
+        <div>
+          <div style="float: none; align-content: center;">          
+            <img  v-bind:src="img_name" / id="myimg" style="height: 90px; width:80px; margin-left:47%; margin-top: 20px; border-radius: 10px; border:0; display: none;">
+          </div>
+          <div style="float: none;">
+          <input v-model="result" style="height: 50px; width:100%;margin-top: 20px; margin-left: 2%; text-align: center; border-style: none; font-size: 36px; background: transparent; color: white; font-family: serif;"  readonly="readonly">
+           {{ result }}
+           </div>
+           <!-- <div style="float: left; display: none;" id="taki">
+             <input v-model="score" style="height: 50px; width:auto;margin-top: 50px; text-align: center; border-style: none; font-size: 36px; background: transparent; color: wheat; font-family: serif;"  readonly="readonly"> 
+           {{ score }}
+           </div> -->
+        </div>
     </div>
 
     <!-- <textarea v-model="model2" style="height: 80px; width: 500px;" placeholder="example: - intent data"></textarea> -->
     <div>
-      <button v-on:click.prevent='download' class="btn"><i class="fa fa-download"></i> Download App</button>
+      <button v-on:click.prevent='download' class="btn btn-success" style="float: none;border-radius: 50px; background-color: transparent; display: none; " id="btndown"><i class="fa fa-download"></i> Download App</button>
+     
     <!-- <button v-on:click.prevent='download' style="margin-left: 700px; margin-top: 20px; margin-bottom: 20px; ">Download App</button>   -->
-    <input v-model="result2" style="height: 50px; width: 500px;margin-left: 500px; text-align: center; border-color: #00022e; background-color: #00022e; color: white;"  readonly="readonly">{{ result2 }}
+    <input v-model="result2" id="result2" style="height: 50px; width: 500px;margin-left:35%; text-align: center; border-style: none;font-size: 26px; font-family: cursive; background-color:transparent; color: white;"  readonly="readonly">{{ result2 }}
     </div>
     <!-- <i class="fas fa-skull-crossbones"></i> -->
      <div>
-    <button v-on:click.prevent='detect' class="btn2"><i class="fa fa-cog"></i> Check for Anomaly</button>
-    <input v-model="result3" style="height: 50px; width: 500px;margin-left: 500px; text-align: center; border-color: #00022e; background-color: #00022e; color: white;"  readonly="readonly">{{ result3 }}
+    <button v-on:click.prevent='detect' class="btn2" style="border-radius: 50px; background-color: transparent; display: none;" id="btncheck"><i class="fa fa-cog"></i> Check for Anomaly</button>
+    <input v-model="result3" style="height: 50px; width: 500px;margin-left: 35%; text-align: center; border-style: none; font-size: 26px; font-family: cursive; border-color: #00022e; background-color: transparent; color: white;"  readonly="readonly">{{ result3 }}
     </div>
     
 </div>
@@ -55,8 +70,11 @@
         result3:null,
         img_name: null,
         call:null,
+        score: null,
+        ratings: null,
         },
         methods: {
+
         search: function() {
             console.log(app.model);
             alert(app.model);
@@ -73,9 +91,19 @@
           .then(response => response.json())
           .then(data =>this.call=data);
            setTimeout(() => {  
-          console.log("asdfghj ", this.call, this.result= this.call['app_name'], this.img_name= this.call['img_src']);
-             }, 3000);
-
+          console.log("asdfghj ", this.call)
+          this.result= this.call['app_name'], this.img_name= this.call['img_src'];
+          this.score= "Rating "+this.call['score'], this.ratings= this.call['ratings'];
+          var x = document.getElementById("myimg");
+            console.log("sdfkjs ",x);
+            x.style.display = "block";
+           var xx = document.getElementById("btndown");
+            console.log("btndown ",xx);
+            xx.style.display = "block";
+             
+            // document.getElementById("taki").style.display="block";
+             }, 5000);
+      
         },
         download: function(){
           const request = new Request(
@@ -86,11 +114,19 @@
                 body: JSON.stringify(this.model2),
                 }
               );
-            this.result2="Downloading app..."
+            this.result2="Downloading app...";
           fetch(request)
           .then(response => response.json())
-          .then(data =>this.result2=data['downloaded']);  
-
+          .then(data =>this.result2=data['downloaded']); 
+          document.getElementById("result2").style.color= "green";
+          document.getElementById("btncheck").style.display = "block";
+            // setInterval(function(){ 
+            //     console.log("result2 ", this.result2);
+            //   if(this.result2="Download completed!"){
+            //   } }, 3000);
+            // var yy = document.getElementById("btncheck");
+            // console.log("btncheck ",yy);
+            // yy.style.display = "block";
           // setTimeout(() => {  this.result2="Download complete!!" }, 30000);
         },
         detect: function(){
@@ -102,6 +138,10 @@
                 body: JSON.stringify(this.model2),
                 }
               );
+          this.result3="Checking anomalous behavoirs..."
+          fetch(request)
+          .then(response => response.json())
+          .then(data =>this.result3=data['anomaly']);
             // this.result3="Checking anomalous behavoirs..."
           // fetch(request)
           // .then(response => response.json())
