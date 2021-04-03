@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block head %}
-<title>Test</title>
+<title>Appmining</title>
 {% endblock %}
 {%  block body %}
 <div id="app" >
@@ -55,8 +55,13 @@
      <div>
     <button v-on:click.prevent='detect' class="btn2" style="border-radius: 50px; background-color: transparent; display: none;" id="btncheck"><i class="fa fa-cog"></i> Check for Anomaly</button>
     <input v-model="result3" style="height: 50px; width: 500px;margin-left: 35%; text-align: center; border-style: none; font-size: 26px; font-family: cursive; border-color: #00022e; background-color: transparent; color: white;"  readonly="readonly">{{ result3 }}
-    </div>
     
+    </div>
+     <div style="text-align: center;">
+      <button v-on:click.prevent='generateReport' class="btn btn-success" style="float: none;border-radius: 50px; display: none; background-color: transparent; " id="btnrep"><i class="fa fa-bar-chart"></i>Download report as pdf</button>
+     <!--  <a id ="rep" target="_blank" style="display: none; font-size: 20px; color: white;" href="http://127.0.0.1:5000/report">Generate Report</a> -->
+    </div>
+    <input v-model="result4" id="result4" style="height: 50px; width: 500px;margin-left:35%; text-align: center; border-style: none;font-size: 26px; font-family: cursive; background-color:transparent; color: white;"  readonly="readonly">{{ result4 }}
 </div>
 <script type="text/javascript">
     var app = new Vue({
@@ -72,6 +77,8 @@
         call:null,
         score: null,
         ratings: null,
+        result4: null,
+        dsi: null,
         },
         methods: {
 
@@ -141,13 +148,59 @@
           this.result3="Checking anomalous behavoirs..."
           fetch(request)
           .then(response => response.json())
-          .then(data =>this.result3=data['anomaly']);
+          .then(data =>this.result3=data["anomaly"]);
+          // setInterval(function(){ 
+          // console.log("D",this.result3=data["anomaly"]);
+                
+          // if (this.dsi!= null){
+          //     this.result3=this.dsi["anomaly"];
+          //     if(this.dsi["flag"]=="malware"){
+          //       document.getElementById("result3").style.color="red";
+          //     }
+          //     else if(this.dsi["flag"]=="normal"){
+          //       document.getElementById("result3").style.color="green";
+          //     }
+          // }
+              
+          // }, 3000);
+              document.getElementById("btnrep").style.display = "block";
             // this.result3="Checking anomalous behavoirs..."
           // fetch(request)
           // .then(response => response.json())
           // .then(data =>this.result2=data);  
 
           // setTimeout(() => {  this.result3="The app is safe!!" }, 50000);
+        },
+        generateReport: function(){
+          const request = new Request(
+                `/api/downloadaspdf`,
+                {
+                 method: "POST",
+                headers: { "Content-Type": "application/json; charset=utf-8" },
+                body: JSON.stringify(""),
+                }
+              );
+            fetch(request)
+          .then(response => response.json())
+          .then(data =>this.pdfname=data);
+          // console.log("this ", this.pdfname["fil"])
+            setTimeout(() => {  
+                // console.log("result2 ", this.result2);
+              this.result4= "PDF download completed!"
+              var yy = document.getElementById("result4");
+            // console.log("btncheck ",yy);
+            yy.style.display = "block";
+            // var yys = document.getElementById("pddf");
+            // // console.log("btncheck ",yy);
+            // yys.style.display = "block";
+               }, 3000);
+
+          //   this.result2="Downloading app...";
+          // fetch(request)
+          // .then(response => response.json())
+          // .then(data =>this.result2=data['downloaded']); 
+          // document.getElementById("result2").style.color= "green";
+          // document.getElementById("btncheck").style.display = "block";
         }
         }
     })
