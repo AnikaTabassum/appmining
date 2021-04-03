@@ -29,7 +29,7 @@ class countapi(object):
 
 	def countIDFscore(self, filename, topicNo):
 		print("filename", filename)
-		root = "D:\\8th_semester\\my_8th_semester\\SPL3\\appmining\\final\\topic_"+str(topicNo)+"\\apiCalls" 
+		root = "D:\\8th_semester\\my_8th_semester\\SPL3\\appmining\\final\\final_topic_"+str(topicNo)+"\\apiCalls" 
 		for path, subdirs, files in os.walk(root, topdown=True):
 			
 			print(files)
@@ -37,9 +37,11 @@ class countapi(object):
 		N=len(files)
 		f = open(filename, "r",errors="ignore")
 		totalVal=int(0)
+		lines_seen = set() # holds lines already seen
+		outfile = open("appmining/static/images/output.txt", "w")
 		lines=f.readlines()
 		for line in lines:
-			topicCountFile="D:\\8th_semester\\my_8th_semester\\SPL3\\appmining\\final\\myfile-07_03_2021_topic_"+str(topicNo)+".txt"
+			topicCountFile="D:\\8th_semester\\my_8th_semester\\SPL3\\appmining\\final\\myfile-26_03_2021_topic_"+str(topicNo)+".txt"
 			# print("topicCountFile", topicCountFile)
 			ff = open(topicCountFile, "r")
 			allAPi= ff.readlines()
@@ -49,12 +51,14 @@ class countapi(object):
 				if ii[0] in line:
 					try:
 						val= math.log(N/int(ii[1]))
-					
 						print(line,val)
 						totalVal+=val
+						if line not in lines_seen:
+							outfile.write(line)
+							lines_seen.add(line)
 					except Exception as e:
 						print(e)
-					
+		outfile.close()	
 		# writer.writerow([i,file,totalVal])
 		# i+=1
 		return totalVal

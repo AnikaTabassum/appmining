@@ -12,11 +12,11 @@ class parser(object):
 
 	def __init__(self, *args, **kwargs):
 		print("afjkjkds")
-	def parseSmaliFiles(self,content, fileNames):
+	def parseSmaliFiles(self,content, fileNames, filename):
 		"""
 		Parse smali code into python directory
 		"""
-
+		print("nope------")
 		smali_class = {}
 		smaliClassName = content.readline()
 		smali_class['ClassName'] = smaliClassName.split(' ')[-1][:-1]
@@ -78,7 +78,7 @@ class parser(object):
 								methodLine.split('}')[1].split('>')[1]
 							if (('Landroid' in methodLine)):
 								# print("fileNames", fileNames)
-								f = open("outputFile"+".txt", "a",errors="ignore")
+								f = open(filename, "a",errors="ignore")
 								method["Android API"].append(methodLine)
 								try:
 									f.write(methodLine+"\n")
@@ -118,13 +118,17 @@ class parser(object):
 		return smali_class
 
 	def parseFile(self,path):
-		print("called parseFile")
+		print("called parseFile", path)
+		import time
+		timestr = time.strftime("%Y%m%d-%H%M%S")
+		print (timestr)
+		filename="output"+timestr+".txt"
 		classes = {}
 		smaliList=[]
 		pattern='*.smali'
 		for path, subdirs, files in os.walk(path):
 			for name in files:
-				# print("name ", name)
+				print("name ", name)
 				if fnmatch.fnmatch(name, pattern):
 					smaliList.append(os.path.join(path, name))
 
@@ -132,15 +136,17 @@ class parser(object):
 			print("vbnjm", smali, len(smaliList))
 			# log.info("Parsing " + smali)
 			filen=smali
-			f = open(smali, 'r')
-			smali_class = self.parseSmaliFiles(f, path)
-			classes[smali_class['ClassName']] = smali_class
+			# f = open(smali, 'r')
+			# smali_class = self.parseSmaliFiles(f, path, filename)
+			# classes[smali_class['ClassName']] = smali_class
 			try:
 				f = open(smali, 'r')
-				smali_class = self.parseSmaliFiles(f, filen)
+				smali_class = self.parseSmaliFiles(f, filen, filename)
 				classes[smali_class['ClassName']] = smali_class
 			except Exception as e:
 				pass
+
+		return filename
 
 
 	def parseDir(self,path):
