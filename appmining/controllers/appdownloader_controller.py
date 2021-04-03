@@ -4,13 +4,16 @@
 from datetime import datetime
 from flask import render_template, redirect, request, jsonify, session
 import json
+import pdfkit
 import pickle
 from appmining import app
 from appmining.services import *
 from google_play_scraper import app as apk
 # import parser
-global application, download_link, appName, topicNo, score, histogram, ratings, reviews
+global application, topicWords,malwareFlag , filesss, download_link, appName, topicNo, score, histogram, ratings, reviews, description
 import os
+from flask_wkhtmltopdf import Wkhtmltopdf
+
 from pynput.keyboard import Key, Controller
 @app.route('/')
 @app.route('/apps')
@@ -18,15 +21,23 @@ def appsearch():
 	print("try")
 	# appdownloader().whoamI()
 	return render_template('appsearch/index.html')
+
+@app.route('/report')
+def report():
+	print("try report")
+	# appdownloader().whoamI()
+	return render_template('report/index.html')
 def downloadDesc(appid):
+	
 	result = apk(
 		# 'com.nianticlabs.pokemongo',
 		appid,
 		lang='en', # defaults to 'en'
 		country='us' # defaults to 'us'
 	)
-	global score, histogram, ratings, reviews
+	global score, histogram, ratings, reviews, appName, description
 	desc=[result["description"]][0]
+	description= desc
 	print(desc)
 	print("score",result['score'])
 	print("histogram", result['histogram'])
@@ -71,6 +82,7 @@ def downaloadapp():
 # 	result=appdownloader().download_apk(download_link)
 # 	print("downaloadapp", result)
 # 	return jsonify(result)
+from twilio.rest import Client
 
 
 import pandas as pd
@@ -208,11 +220,13 @@ def topicFind(filtered_sentence):
 	print(km.predict([topics]))
 	pred=km.predict([topics])
 	topicNo=pred[0]
+	if topicNo==2:
+		topicNo+=1
 	print("topicNo", topicNo)
 @app.route('/api/detect', methods=['POST', 'PUT'])
 def calculateScore():
-	global appName, topicNo
-	os.system("apktool" + " d " + appName+".apk"+" & ‘\r\n’")
+	global appName, topicNo, malwareFlag, filesss
+	os.system("apktool " + appName+".apk"+" & ‘\r\n’")
 
 	# keyboard = Controller()
 	# # keyboard.press(Key.cmd)
@@ -226,20 +240,172 @@ def calculateScore():
 	print("dir_path", dir_path)
 	cwd = os.getcwd()
 	print("cwd", cwd)
-	parser().parseFile(root)
-	print(countapi().countIDFscore(cwd+"\\outputFile.txt",topicNo))
+	filesss=parser().parseFile(root)
+	# print(countapi().countIDFscore(cwd+"\\outputFile.txt",topicNo))
 	modelName="oc_svm_"+str(topicNo)+".pk"
-	sc=countapi().countIDFscore(cwd+"\\outputFile.txt",topicNo)
+	sc=countapi().countIDFscore(cwd+"\\"+filesss,topicNo)
 	score=[sc]
+	print("score ", sc)
 	with open(modelName,"rb") as k:
 		md = pickle.load(k)
 				
 	pred=md.predict([score])
 	print("pred ", pred)
 	malwareFlag="This App is suspected as Malware! "
+	flag="malware"
 	if pred[0]==1:
 		malwareFlag="This App is safe to install "
+		flag="normal"
+	# else:
+	# 	# the following line needs your Twilio Account SID and Auth Token
+	# 	client = Client("AC3b57140eded5855ff98128f6d00024e2", "58d87802b41743db0c2ee55a1d7f8575")
+
+	# 	# change the "from_" number to your Twilio number and the "to" number
+	# 	# to the phone number you signed up for Twilio with, or upgrade your
+	# 	# account to send SMS to any phone number
+	# 	client.messages.create(to="+8801955073646", 
+	# 						   from_="+13236738996", 
+	# 						   body=malwareFlag)
 	print("malwareFlag", malwareFlag)
-	return jsonify({"anomaly":malwareFlag})
+	plot_fig().plot(topicNo, sc)
+	return jsonify({"anomaly":malwareFlag,"flag":flag})
 	# topicNo=pred[0]
 	# print("topicNo", topicNo)
+
+@app.route('/api/description', methods=['POST', 'PUT'])
+def reportload():	
+	global score, histogram, ratings, reviews, appName, description, topicWords
+	print(appName, score, description)
+	topicWords=[]
+	if topicNo==0:
+		topicWords=['control','account','mobil','TV','remot','transact','bank','servic','payment']
+	elif topicNo==1:
+		topicWords=['workout','home','fat','weight','exercis','fit','lose','burn','app','women']
+	elif topicNo==2:
+		topicWords=['game','play','friend','mode','pool','carrom','player','board']
+	elif topicNo==3:
+		topicWords=['game','music','play','fun','learn','color','song','piano','kid']
+	elif topicNo==4:
+		topicWords=['english','bangla','translat','languag','word','voic','text','medicin','dictionari','speak']
+	elif topicNo==5:
+		topicWords=['run','player','game','world','custom','use','purchas','play','talk']
+	elif topicNo==6:
+		topicWords=['game','play','quiz','brain','puzzl','hous','fun','level','test']
+	elif topicNo==7:
+		topicWords=['video','call','chat','messag','messeng','play','friend','game','cricket']
+	elif topicNo==8:
+		topicWords=['rent','friend','peopl','share','order','locat','job','advertis','video']
+	elif topicNo==9:
+		topicWords=['game','kid','learn','cook','babi','educ','cake','fun','shop','cream']
+	elif topicNo==10:
+		topicWords=['girl','home','chat','recip','height','design','wall','room','increas','meet']
+	elif topicNo==11:
+		topicWords=['color','order','food','deliveri','secur','pizza','connect','restaur','use']
+	# appName="test"
+	# score="4.89"
+	# description="ytdrecdrvfbnuhimojuyhgtrfdsgfvnhjkl\
+	# uybgkjlnhjgfvdtvhyuijkmnbjvhgfvtyuijk"
+	return jsonify({'app_name':appName, 'score':score, 'description': description, 'topicWords': topicWords}) 
+
+@app.route('/api/downloadaspdf', methods=['POST', 'PUT'])	
+def downloadaspdf():
+
+	global filesss, topicWords,appName, score, description, topicNo
+	# topicNo=6
+	global score, histogram, ratings, reviews, appName, description, topicWords
+	# print(appName, score, description)
+	topicWords=[]
+	if topicNo==0:
+		topicWords=['control','account','mobil','TV','remot','transact','bank','servic','payment']
+	elif topicNo==1:
+		topicWords=['workout','home','fat','weight','exercis','fit','lose','burn','app','women']
+	elif topicNo==2:
+		topicWords=['game','play','friend','mode','pool','carrom','player','board']
+	elif topicNo==3:
+		topicWords=['game','music','play','fun','learn','color','song','piano','kid']
+	elif topicNo==4:
+		topicWords=['english','bangla','translat','languag','word','voic','text','medicin','dictionari','speak']
+	elif topicNo==5:
+		topicWords=['run','player','game','world','custom','use','purchas','play','talk']
+	elif topicNo==6:
+		topicWords=['game','play','quiz','brain','puzzl','hous','fun','level','test']
+	elif topicNo==7:
+		topicWords=['video','call','chat','messag','messeng','play','friend','game','cricket']
+	elif topicNo==8:
+		topicWords=['rent','friend','peopl','share','order','locat','job','advertis','video']
+	elif topicNo==9:
+		topicWords=['game','kid','learn','cook','babi','educ','cake','fun','shop','cream']
+	elif topicNo==10:
+		topicWords=['girl','home','chat','recip','height','design','wall','room','increas','meet']
+	elif topicNo==11:
+		topicWords=['color','order','food','deliveri','secur','pizza','connect','restaur','use']
+
+	# appName="test"
+	# score="4.89"
+	# description="ytdrecdrvfbnuhimojuyhgtrfdsgfvnhjkl\
+	# uybgkjlnhjgfvdtvhyuijkmnbjvhgfvtyuijk"
+	# filesss="Sfkjnszijtr"
+	# topicWords=['english','bangla','translat','languag','word','voic','text','medicin','dictionari','speak']
+	
+
+	fil= filesss+".pdf"
+	print("fil ", fil, topicWords)
+	tw=topicWords[0]
+	for i  in range(1,len(topicWords)):
+		tw= tw+","+ topicWords[i]
+	from fpdf import FPDF
+  
+	  
+	# save FPDF() class into a 
+	# variable pdf
+	pdf = FPDF()
+	  
+	# Add a page
+	pdf.add_page()
+	  
+	# set style and size of font 
+	# that you want in the pdf
+	pdf.set_font("Arial", size = 10)
+	  
+	# create a cell
+	pdf.cell(200, 10, txt = "App Report", 
+			 ln = 1, align = 'C')
+	pdf.cell(200, 10, txt = "App id : "+ appName ,
+			 ln = 2, align = 'C')
+	pdf.cell(200, 10, txt = "rating : "+ str(score),
+			 ln = 3, align = 'C')
+	# pdf.cell(200, 10, txt = "App Description : "+ str(description),
+	# 		 ln = 4, align = 'C')
+	# add another cell
+	pdf.cell(200, 10, txt = "Most significant words of this topic are: "+tw,
+			 ln = 5, align = 'C')
+	pdf.image('appmining/static/images/my_plot.png', x=50 , w=100, h=80)
+	sss="The orange app is the new app. The blue app is the other app of the same topic"
+	# pdf.cell(200, 10, txt = sss,
+	#          ln = 11, align = 'C')
+	# save the pdf with name .pdf
+	infile = open("appmining/static/images/output.txt", "r", encoding="UTF-8")
+	
+	ss=[]
+	# insert the texts in pdf
+	for x in infile:
+		im=x.find(">")
+		sdd=x[im+1:]
+		lm=sdd.find("(")
+		sdd=sdd[:lm]
+		print("sdd ", sdd)
+		ss.append(sdd)
+	pp=ss[0]
+	for i  in range(1,len(ss)):
+		pp= pp+","+ ss[i]
+	pdf.cell(200, 10, txt ="Sensitive API calls made by this app are: "+ pp, ln = 1, align = 'C')
+	pdf.output("appmining/static/images/"+fil) 
+
+
+	# wkhtmltopdf = Wkhtmltopdf(app)
+	# path_wkhtmltopdf = r'C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe'
+	# config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
+	# pdfkit.from_url("http://127.0.0.1:5000/report", fil, configuration=config)
+	# pdfkit.from_string(render_template('report/index.html'))
+	print("pungi")
+	return jsonify({'fil':fil})
